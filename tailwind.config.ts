@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -46,6 +49,13 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        grade: {
+          a: "hsl(var(--grade-a))",
+          b: "hsl(var(--grade-b))",
+          c: "hsl(var(--grade-c))",
+          d: "hsl(var(--grade-d))",
+          f: "hsl(var(--grade-f))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
