@@ -33,7 +33,7 @@ const mockHistory = [
 
 const mockResult = {
   totalCO2: 14.8,
-  grade: "B" as const,
+  grade: "B" as string,
   items: [
     { name: "Beef Steak (500g)", co2: 6.8 },
     { name: "Whole Milk (1L)", co2: 1.6 },
