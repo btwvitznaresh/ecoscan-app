@@ -1,101 +1,98 @@
-// API Service - handles all backend communication
-// In production, replace BASE_URL with your actual backend URL
+import { supabase } from "@/integrations/supabase/client";
 
-const BASE_URL = "https://your-backend-api.com";
-
-// Simulated JWT token storage
-let authToken: string | null = null;
-
-export const setToken = (token: string) => {
-  authToken = token;
-  localStorage.setItem("eco_token", token);
+export type ResultData = {
+  totalCO2: number;
+  grade: string;
+  items: { name: string; co2: number }[];
 };
 
-export const getToken = () => {
-  if (!authToken) {
-    authToken = localStorage.getItem("eco_token");
-  }
-  return authToken;
+export type SwapItem = {
+  original: string;
+  swap: string;
+  saveCO2: number;
 };
 
-export const clearToken = () => {
-  authToken = null;
-  localStorage.removeItem("eco_token");
+export type HistoryItem = {
+  id: string;
+  date: string;
+  co2: number;
+  grade: string;
+  items: number;
 };
 
-// Mock data for demo purposes
-const mockHistory = [
-  { id: "1", date: "2026-03-25", co2: 12.4, grade: "B", items: 8 },
-  { id: "2", date: "2026-03-20", co2: 28.7, grade: "D", items: 15 },
-  { id: "3", date: "2026-03-15", co2: 5.2, grade: "A", items: 6 },
-  { id: "4", date: "2026-03-10", co2: 18.1, grade: "C", items: 11 },
-];
-
-const mockResult = {
-  totalCO2: 14.8,
-  grade: "B" as string,
-  items: [
-    { name: "Beef Steak (500g)", co2: 6.8 },
-    { name: "Whole Milk (1L)", co2: 1.6 },
-    { name: "Rice (1kg)", co2: 2.7 },
-    { name: "Chicken Breast (400g)", co2: 1.9 },
-    { name: "Tomatoes (500g)", co2: 0.7 },
-    { name: "Cheese (200g)", co2: 1.1 },
-  ],
-};
-
-const mockSwaps = [
-  { original: "Beef Steak", swap: "Lentils", saveCO2: 5.9 },
-  { original: "Whole Milk", swap: "Oat Milk", saveCO2: 0.9 },
-  { original: "Rice", swap: "Potatoes", saveCO2: 1.5 },
-  { original: "Cheese", swap: "Hummus", saveCO2: 0.6 },
-];
-
-// Simulated API calls with mock data
 export const api = {
-  login: async (email: string, password: string) => {
-    await delay(800);
-    if (!email || !password) throw new Error("Email and password required");
-    const token = "mock_jwt_token_" + Date.now();
-    setToken(token);
-    return { token, user: { email } };
+  uploadReceipt: async (file: File, userId: string) => {
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${userId}/${Date.now()}.${fileExt}`;
+
+    const { error } = await supabase.storage
+      .from("receipts")
+      .upload(filePath, file);
+
+    if (error) throw error;
+    return { receiptPath: filePath };
   },
 
-  register: async (email: string, password: string) => {
-    await delay(800);
-    if (!email || !password) throw new Error("Email and password required");
-    return { message: "Registration successful" };
+  analyzeReceipt: async (receiptPath: string): Promise<ResultData & { scanId: string; swaps: SwapItem[] }> => {
+    const { data, error } = await supabase.functions.invoke("analyze-receipt", {
+      body: { receiptUrl: receiptPath },
+    });
+
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+    return data;
   },
 
-  uploadReceipt: async (_file: File) => {
-    await delay(1500);
-    return { receiptId: "receipt_" + Date.now() };
+  getSwaps: async (scanId: string): Promise<SwapItem[]> => {
+    const { data, error } = await supabase
+      .from("swap_suggestions")
+      .select("*")
+      .eq("scan_id", scanId);
+
+    if (error) throw error;
+    return (data || []).map((s) => ({
+      original: s.original,
+      swap: s.swap,
+      saveCO2: s.save_co2,
+    }));
   },
 
-  analyzeReceipt: async (_receiptId: string) => {
-    await delay(2000);
-    return mockResult;
+  getHistory: async (): Promise<HistoryItem[]> => {
+    const { data, error } = await supabase
+      .from("scans")
+      .select("id, created_at, total_co2, grade, scan_items(id)")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map((scan) => ({
+      id: scan.id,
+      date: scan.created_at,
+      co2: scan.total_co2,
+      grade: scan.grade,
+      items: Array.isArray(scan.scan_items) ? scan.scan_items.length : 0,
+    }));
   },
 
-  getSwaps: async () => {
-    await delay(500);
-    return mockSwaps;
-  },
+  getScanResult: async (scanId: string): Promise<ResultData> => {
+    const { data: scan, error: scanError } = await supabase
+      .from("scans")
+      .select("*")
+      .eq("id", scanId)
+      .single();
 
-  getHistory: async () => {
-    await delay(600);
-    return mockHistory;
-  },
+    if (scanError) throw scanError;
 
-  logout: () => {
-    clearToken();
+    const { data: items, error: itemsError } = await supabase
+      .from("scan_items")
+      .select("*")
+      .eq("scan_id", scanId);
+
+    if (itemsError) throw itemsError;
+
+    return {
+      totalCO2: scan.total_co2,
+      grade: scan.grade,
+      items: (items || []).map((i) => ({ name: i.name, co2: i.co2 })),
+    };
   },
 };
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export type HistoryItem = (typeof mockHistory)[0];
-export type ResultData = typeof mockResult;
-export type SwapItem = (typeof mockSwaps)[0];

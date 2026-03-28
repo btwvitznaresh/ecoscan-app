@@ -2,28 +2,21 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Leaf, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import type { ResultData } from "@/services/api";
+import type { ResultData, SwapItem } from "@/services/api";
 
 const gradeColors: Record<string, string> = {
-  A: "bg-grade-a",
-  B: "bg-grade-b",
-  C: "bg-grade-c",
-  D: "bg-grade-d",
-  F: "bg-grade-f",
+  A: "bg-grade-a", B: "bg-grade-b", C: "bg-grade-c", D: "bg-grade-d", F: "bg-grade-f",
 };
 
 const gradeTextColors: Record<string, string> = {
-  A: "text-grade-a",
-  B: "text-grade-b",
-  C: "text-grade-c",
-  D: "text-grade-d",
-  F: "text-grade-f",
+  A: "text-grade-a", B: "text-grade-b", C: "text-grade-c", D: "text-grade-d", F: "text-grade-f",
 };
 
 const ResultScreen = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const result = (location.state as { result: ResultData })?.result;
+  const state = location.state as { result: ResultData & { scanId: string; swaps: SwapItem[] } } | null;
+  const result = state?.result;
 
   if (!result) {
     navigate("/home");
@@ -41,7 +34,6 @@ const ResultScreen = () => {
         <h1 className="text-2xl font-bold text-foreground">Results</h1>
       </div>
 
-      {/* Hero stats */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-6 mb-6 text-center">
         <p className="text-sm text-muted-foreground mb-2">Total Carbon Footprint</p>
         <p className="text-5xl font-extrabold text-foreground">{result.totalCO2}<span className="text-xl text-muted-foreground ml-1">kg</span></p>
@@ -57,7 +49,6 @@ const ResultScreen = () => {
         </div>
       </motion.div>
 
-      {/* Item breakdown */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-2xl border border-border p-5 mb-6">
         <h3 className="font-semibold text-foreground mb-4">Item Breakdown</h3>
         <div className="space-y-3">
@@ -80,9 +71,8 @@ const ResultScreen = () => {
         </div>
       </motion.div>
 
-      {/* Actions */}
       <div className="flex gap-3">
-        <Button onClick={() => navigate("/swaps")} className="flex-1 h-12 rounded-xl eco-gradient eco-shadow text-primary-foreground">
+        <Button onClick={() => navigate("/swaps", { state: { scanId: result.scanId, swaps: result.swaps } })} className="flex-1 h-12 rounded-xl eco-gradient eco-shadow text-primary-foreground">
           <Leaf className="w-4 h-4 mr-2" /> View Swaps
         </Button>
         <Button onClick={() => navigate("/home")} variant="outline" className="flex-1 h-12 rounded-xl">

@@ -5,11 +5,7 @@ import { api, type HistoryItem } from "@/services/api";
 import { motion } from "framer-motion";
 
 const gradeColors: Record<string, string> = {
-  A: "bg-grade-a",
-  B: "bg-grade-b",
-  C: "bg-grade-c",
-  D: "bg-grade-d",
-  F: "bg-grade-f",
+  A: "bg-grade-a", B: "bg-grade-b", C: "bg-grade-c", D: "bg-grade-d", F: "bg-grade-f",
 };
 
 const HistoryScreen = () => {
@@ -17,12 +13,9 @@ const HistoryScreen = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchHistory = () => {
-    setLoading(true);
-    api.getHistory().then((data) => { setHistory(data); setLoading(false); });
-  };
-
-  useEffect(() => { fetchHistory(); }, []);
+  useEffect(() => {
+    api.getHistory().then((data) => { setHistory(data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
 
   return (
     <div className="mobile-container px-6 py-8 bg-background">
