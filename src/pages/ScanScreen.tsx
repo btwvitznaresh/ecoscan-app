@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Camera, Upload, ArrowLeft, Sparkles, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,6 +14,7 @@ const ScanScreen = () => {
   const fileInput = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -25,17 +27,17 @@ const ScanScreen = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!file) {
+    if (!file || !user) {
       toast({ title: "No image", description: "Please upload a receipt first", variant: "destructive" });
       return;
     }
     setAnalyzing(true);
     try {
-      const { receiptId } = await api.uploadReceipt(file);
-      const result = await api.analyzeReceipt(receiptId);
+      const { receiptPath } = await api.uploadReceipt(file, user.id);
+      const result = await api.analyzeReceipt(receiptPath);
       navigate("/result", { state: { result } });
-    } catch {
-      toast({ title: "Error", description: "Failed to analyze receipt", variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to analyze receipt", variant: "destructive" });
     } finally {
       setAnalyzing(false);
     }
@@ -96,7 +98,7 @@ const ScanScreen = () => {
             {analyzing ? (
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Analyzing...
+                Analyzing with AI...
               </div>
             ) : (
               <><Sparkles className="w-5 h-5 mr-2" /> Analyze Receipt</>

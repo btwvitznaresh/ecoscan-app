@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Leaf, Mail, Lock, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api } from "@/services/api";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,11 +25,12 @@ const RegisterScreen = () => {
     }
     setLoading(true);
     try {
-      await api.register(email, password);
-      toast({ title: "Success! 🎉", description: "Account created. Please log in." });
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      toast({ title: "Success! 🎉", description: "Check your email to confirm your account." });
       navigate("/");
-    } catch {
-      toast({ title: "Registration Failed", description: "Please try again", variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Registration Failed", description: err.message || "Please try again", variant: "destructive" });
     } finally {
       setLoading(false);
     }

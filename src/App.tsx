@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
 import LoginScreen from "./pages/LoginScreen";
 import RegisterScreen from "./pages/RegisterScreen";
 import HomeScreen from "./pages/HomeScreen";
@@ -18,16 +19,18 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LoginScreen />} />
-          <Route path="/register" element={<RegisterScreen />} />
-          <Route path="/home" element={<HomeScreen />} />
-          <Route path="/scan" element={<ScanScreen />} />
-          <Route path="/result" element={<ResultScreen />} />
-          <Route path="/swaps" element={<SwapScreen />} />
-          <Route path="/history" element={<HistoryScreen />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<LoginScreen />} />
+            <Route path="/register" element={<RegisterScreen />} />
+            <Route path="/home" element={<HomeScreen />} />
+            <Route path="/scan" element={<ScanScreen />} />
+            <Route path="/result" element={<ResultScreen />} />
+            <Route path="/swaps" element={<SwapScreen />} />
+            <Route path="/history" element={<HistoryScreen />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
