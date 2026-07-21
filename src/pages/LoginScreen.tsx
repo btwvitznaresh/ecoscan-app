@@ -110,7 +110,7 @@ const LoginScreen = () => {
 
         <p className="text-center text-muted-foreground pt-4">
           Don't have an account?{" "}
-          <button onClick={() => navigate("/register")} className="text-primary font-semibold hover:underline">Sign Up</button>
+          <button onClick={() => navigate("/register")} className="text-primary font-semibold hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded-sm px-0.5">Sign Up</button>
         </p>
       </motion.div>
     </div>

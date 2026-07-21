@@ -68,7 +68,7 @@ const RegisterScreen = () => {
 
         <p className="text-center text-muted-foreground pt-4">
           Already have an account?{" "}
-          <button onClick={() => navigate("/")} className="text-primary font-semibold hover:underline">Sign In</button>
+          <button onClick={() => navigate("/")} className="text-primary font-semibold hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded-sm px-0.5">Sign In</button>
         </p>
       </motion.div>
     </div>

@@ -73,6 +73,46 @@ export const api = {
     }));
   },
 
+  getDashboardData: async (): Promise<{
+    lastScan: { name: string; grade: string } | null;
+    scansThisMonth: number;
+  }> => {
+    const { data: lastScanData, error: lastScanError } = await supabase
+      .from("scans")
+      .select("id, grade, scan_items(name)")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastScanError) throw lastScanError;
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count, error: countError } = await supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", startOfMonth.toISOString());
+
+    if (countError) throw countError;
+
+    let lastName = "Receipt Scan";
+    if (lastScanData && Array.isArray(lastScanData.scan_items) && lastScanData.scan_items.length > 0) {
+      const items = lastScanData.scan_items as any[];
+      if (items[0] && items[0].name) {
+        lastName = items[0].name;
+      }
+    }
+
+    return {
+      lastScan: lastScanData
+        ? { name: lastName, grade: lastScanData.grade }
+        : null,
+      scansThisMonth: count || 0,
+    };
+  },
+
   getScanResult: async (scanId: string): Promise<ResultData> => {
     const { data: scan, error: scanError } = await supabase
       .from("scans")

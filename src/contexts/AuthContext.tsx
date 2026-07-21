@@ -30,10 +30,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+        setLoading(false);
+      } else {
+        // Silent guest login to bypass login screen while still acquiring an auth token
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ 
+          email: 'guest@ecoscan.app', 
+          password: 'guestpassword123' 
+        });
+        
+        if (error) {
+          // If the account doesn't exist yet, create it
+          await supabase.auth.signUp({ 
+            email: 'guest@ecoscan.app', 
+            password: 'guestpassword123' 
+          });
+        }
+        // The onAuthStateChange listener will handle setting the state once logged in
+      }
     });
 
     return () => subscription.unsubscribe();

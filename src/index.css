@@ -57,6 +57,48 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  .dark {
+    --background: 150 25% 6%;
+    --foreground: 140 15% 90%;
+
+    --card: 150 20% 9%;
+    --card-foreground: 140 15% 90%;
+
+    --popover: 150 20% 9%;
+    --popover-foreground: 140 15% 90%;
+
+    --primary: 152 60% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 15% 13%;
+    --secondary-foreground: 140 15% 90%;
+
+    --muted: 150 15% 13%;
+    --muted-foreground: 150 10% 60%;
+
+    --accent: 85 50% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 15% 16%;
+    --input: 150 15% 16%;
+    --ring: 152 60% 42%;
+
+    /* Custom eco tokens in dark mode */
+    --eco-gradient: linear-gradient(135deg, hsl(152, 60%, 42%), hsl(85, 50%, 45%));
+    --eco-gradient-soft: linear-gradient(135deg, hsl(150, 15%, 13%), hsl(150, 25%, 6%));
+    --eco-shadow: 0 4px 20px -4px hsl(152 60% 4% / 0.5);
+    --eco-shadow-lg: 0 12px 40px -8px hsl(152 60% 4% / 0.6);
+
+    --grade-a: 152 60% 40%;
+    --grade-b: 85 50% 45%;
+    --grade-c: 45 90% 45%;
+    --grade-d: 25 90% 50%;
+    --grade-f: 0 72% 48%;
+  }
 }
 
 @layer base {
@@ -92,5 +134,20 @@
 
   .mobile-container {
     @apply max-w-md mx-auto min-h-screen;
+  }
+}
+
+/* ─── Accessibility: ensure keyboard focus is always visible ─── */
+@layer base {
+  /* Remove the blanket outline:none that some resets add */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
   }
 }
